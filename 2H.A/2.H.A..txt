@@ -1,0 +1,98 @@
+from pydantic import BaseModel, EmailStr, conint, constr, field_validator, model_validator
+import json
+
+class Address(BaseModel):
+    city: constr(min_length=2)
+    street: constr(min_length=3)
+    house_number: conint(gt=0)
+
+class User(BaseModel):
+    name: str
+    age: conint(ge=0, le=120)
+    email: EmailStr
+    is_employed: bool
+    address: Address
+
+    @field_validator('name')
+    def validate_name(cls, value):
+        if len(value) < 2 or not value.isalpha():
+            raise ValueError('Name must be at least 2 characters long and contain only letters.')
+        return value.title()  
+
+    @model_validator(mode='before')
+    def validate_age(cls, values):
+        age = values.get('age')
+        is_employed = values.get('is_employed')
+        if is_employed and age < 18:
+            raise ValueError('Employed users must be at least 18 years old.')
+        return values
+
+    @field_validator('email')
+    def validate_email(cls, value):
+        if not value.endswith('.com'):
+            raise ValueError('Email must end with .com')
+        return value
+
+def process_user_json(json_string: str) -> str:
+    try:
+        user = User.parse_raw(json_string)
+        return user.json()
+    except (ValueError, json.JSONDecodeError) as e:
+        return json.dumps({"error": str(e)})
+
+valid_json = json.dumps({
+    "name": "Hans",
+    "age": 30,
+    "email": "hans.mueller@example.com",
+    "is_employed": True,
+    "address": {
+        "city": "Muenchen",
+        "street": "Marienplatz",
+        "house_number": 10
+    }
+})
+
+age_error_json = json.dumps({
+    "name": "Anna",
+    "age": 17,
+    "email": "anna.schmidt@example.com",
+    "is_employed": True,
+    "address": {
+        "city": "Berlin",
+        "street": "Alexanderplatz",
+        "house_number": 20
+    }
+})
+
+email_error_json = json.dumps({
+    "name": "Lukas",
+    "age": 25,
+    "email": "lukas.schneider@com",
+    "is_employed": False,
+    "address": {
+        "city": "Hamburg",
+        "street": "Reeperbahn",
+        "house_number": 30
+    }
+})
+
+address_error_json = json.dumps({
+    "name": "Klara",
+    "age": 40,
+    "email": "klara.fischer@example.com",
+    "is_employed": True,
+    "address": {
+        "city": "Stuttgart",
+        "street": "B",
+        "house_number": 40
+    }
+})
+
+print("Valid JSON Response:")
+print(process_user_json(valid_json))
+print("\nAge Error JSON Response:")
+print(process_user_json(age_error_json))
+print("\nEmail Error JSON Response:")
+print(process_user_json(email_error_json))
+print("\nAddress Error JSON Response:")
+print(process_user_json(address_error_json))
