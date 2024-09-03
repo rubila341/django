@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Pulse</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Community Pulse</h1>
+
+    <!-- Form to add a new question -->
+    <h2>Add a New Question</h2>
+    <form id="question-form" action="{{ url_for('create_question') }}" method="post">
+        <input type="text" name="title" placeholder="Title" required>
+        <textarea name="description" placeholder="Description" required></textarea>
+        <button type="submit">Submit Question</button>
+    </form>
+
+    <!-- Form to add a new response -->
+    <h2>Add a Response</h2>
+    <form id="response-form" action="{{ url_for('create_response') }}" method="post">
+        <select name="question_id" required>
+            {% for question in questions %}
+            <option value="{{ question.id }}">{{ question.title }}</option>
+            {% endfor %}
+        </select>
+        <textarea name="text" placeholder="Response text" required></textarea>
+        <button type="submit">Submit Response</button>
+    </form>
+
+    <!-- Display questions and their responses -->
+    <h2>Questions and Responses</h2>
+    <ul>
+        {% for question in questions %}
+        <li>
+            <h3>{{ question.title }}</h3>
+            <p>{{ question.description }}</p>
+            <ul>
+                {% for response in question.responses %}
+                <li>{{ response.text }}</li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+</body>
+</html>

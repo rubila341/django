@@ -1,0 +1,30 @@
+# Общие временные файлы и директории
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.db
+*.sqlite3
+
+# Папки виртуального окружения
+.venv/
+env/
+venv/
+ENV/
+
+# Файлы конфигурации среды разработки
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# Миграции
+migrations/
+*.log
+
+# Файлы и каталоги, не входящие в контроль версий
+*.sqlite3

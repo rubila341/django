@@ -1,0 +1,10 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+#question-form {
+    margin-bottom: 20px;
+}
+#questions-list {
+    margin-top: 20px;
+}
