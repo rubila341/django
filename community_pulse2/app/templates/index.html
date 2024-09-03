@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Pulse</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Community Pulse</h1>
+        <nav>
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('categories') }}">Categories</a>
+        </nav>
+    </header>
+
+    <div class="hero">
+        <div class="hero-content">
+            <h1>Ask Your Question</h1>
+            <p>Type your question below and get an answer.</p>
+            <form id="questionForm" class="question-form">
+                <textarea id="questionInput" rows="4" placeholder="Enter your question here..."></textarea>
+                <button type="button" onclick="submitQuestion()">Get Answer</button>
+            </form>
+            <div id="responseContainer"></div>
+        </div>
+    </div>
+
+    <div class="central-block">
+        <div class="central-content">
+            <h2>Featured Highlights</h2>
+            <p>Explore our highlighted features and latest updates.</p>
+        </div>
+        <div class="highlight-items">
+            <div class="highlight-item">
+                <div class="highlight-icon">🗣️</div>
+                <h3>Engage with Experts</h3>
+                <p>Connect with knowledgeable community members and get expert insights.</p>
+            </div>
+            <div class="highlight-item">
+                <div class="highlight-icon">🌟</div>
+                <h3>Popular Topics</h3>
+                <p>Stay updated with the most discussed topics in the community.</p>
+            </div>
+            <div class="highlight-item">
+                <div class="highlight-icon">🎉</div>
+                <h3>Community Events</h3>
+                <p>Join exciting events and participate in community challenges.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Community Pulse</p>
+    </footer>
+
+    <script>
+        async function submitQuestion() {
+            const questionInput = document.getElementById('questionInput').value;
+            const responseContainer = document.getElementById('responseContainer');
+
+            if (questionInput.trim() === '') {
+                responseContainer.textContent = 'Please enter a question.';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/ask-question', { // Update with your API endpoint
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question: questionInput })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                responseContainer.textContent = data.answer || 'No answer available.';
+            } catch (error) {
+                responseContainer.textContent = 'There was an error processing your request.';
+            }
+        }
+    </script>
+</body>
+</html>

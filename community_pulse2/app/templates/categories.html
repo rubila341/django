@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Categories</h2>
+
+<button onclick="toggleCategoryForm()" class="toggle-category-button">Add New Category</button>
+
+<div id="addCategoryForm" class="hidden">
+    <h3>Add Category</h3>
+    <form id="categoryForm">
+        <input type="text" id="categoryName" placeholder="Category Name" required>
+        <button type="button" onclick="addCategory()" class="submit-category-button">Add Category</button>
+    </form>
+</div>
+
+<div id="categoryList" class="category-list"></div>
+
+<div id="categoryDetails" class="hidden">
+    <h3 id="categoryTitle">Category Title</h3>
+    <div id="questionsList" class="questions-container"></div>
+    <div id="answerForm" class="hidden">
+        <h4>Add Answer</h4>
+        <form id="answerSubmissionForm">
+            <textarea id="answerText" placeholder="Enter your answer here..." rows="2" required></textarea>
+            <button type="button" onclick="submitAnswer()" class="submit-answer-button">Submit</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const categories = [
+        { id: 1, name: "General Knowledge", questions: [{ id: 1, text: "What is the capital of France?", answers: [] }] },
+        { id: 2, name: "Technology", questions: [{ id: 2, text: "What is the latest version of HTML?", answers: [] }] }
+    ];
+
+    function toggleCategoryForm() {
+        const form = document.getElementById('addCategoryForm');
+        form.classList.toggle('hidden');
+    }
+
+    function addCategory() {
+        const name = document.getElementById('categoryName').value;
+        if (name) {
+            const newCategory = { id: categories.length + 1, name: name, questions: [] };
+            categories.push(newCategory);
+            renderCategories();
+            document.getElementById('categoryName').value = '';
+            toggleCategoryForm();
+        }
+    }
+
+    function showCategory(categoryId) {
+        const category = categories.find(c => c.id === categoryId);
+        if (category) {
+            document.getElementById('categoryTitle').textContent = category.name;
+            const questionsList = document.getElementById('questionsList');
+            questionsList.innerHTML = '';
+            category.questions.forEach(question => {
+                const questionElement = document.createElement('div');
+                questionElement.classList.add('question-item');
+                questionElement.innerHTML = `
+                    <div class="question-text">${question.text}</div>
+                    <button onclick="showAnswerForm(${question.id})" class="add-answer-button">Add</button>
+                    <div id="answers_${question.id}" class="answers-list"></div>
+                `;
+                questionsList.appendChild(questionElement);
+            });
+            document.getElementById('categoryDetails').classList.remove('hidden');
+        }
+    }
+
+    function showAnswerForm(questionId) {
+        const answerForm = document.getElementById('answerForm');
+        answerForm.classList.remove('hidden');
+        answerForm.dataset.questionId = questionId;
+
+        const questionElement = document.querySelector(`.question-item:nth-child(${Array.from(document.querySelectorAll('.question-item')).findIndex(item => item.querySelector('button').onclick.toString().includes(questionId)) + 1})`);
+        answerForm.style.top = (questionElement.offsetTop + window.scrollY) + 'px';
+        answerForm.style.left = (questionElement.offsetWidth + 20) + 'px';
+        answerForm.style.position = 'absolute';
+
+        const viewportWidth = window.innerWidth;
+        if (answerForm.offsetLeft + answerForm.offsetWidth > viewportWidth) {
+            answerForm.style.left = (viewportWidth - answerForm.offsetWidth - 10) + 'px';
+        }
+
+        answerForm.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function submitAnswer() {
+        const questionId = document.getElementById('answerForm').dataset.questionId;
+        const answerText = document.getElementById('answerText').value;
+        if (answerText) {
+            const question = categories.flatMap(c => c.questions).find(q => q.id === Number(questionId));
+            if (question) {
+                question.answers.push(answerText);
+                renderAnswers(questionId);
+                document.getElementById('answerText').value = '';
+                document.getElementById('answerForm').classList.add('hidden');
+            }
+        }
+    }
+
+    function renderCategories() {
+        const categoryList = document.getElementById('categoryList');
+        categoryList.innerHTML = '';
+        categories.forEach(category => {
+            const categoryElement = document.createElement('div');
+            categoryElement.classList.add('category-item');
+            categoryElement.innerHTML = `
+                <div class="category-name">${category.name}</div>
+                <button onclick="showCategory(${category.id})" class="view-category-button">View</button>
+            `;
+            categoryList.appendChild(categoryElement);
+        });
+    }
+
+    function renderAnswers(questionId) {
+        const question = categories.flatMap(c => c.questions).find(q => q.id === Number(questionId));
+        const answersList = document.getElementById(`answers_${questionId}`);
+        answersList.innerHTML = '';
+        question.answers.forEach(answer => {
+            const answerElement = document.createElement('div');
+            answerElement.classList.add('answer-item');
+            answerElement.innerHTML = `<p>${answer}</p>`;
+            answersList.appendChild(answerElement);
+        });
+    }
+
+    renderCategories();
+</script>
+
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        overflow: auto;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .toggle-category-button, .view-category-button, .add-answer-button, .submit-category-button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 5px 10px;
+        font-size: 12px;
+        cursor: pointer;
+        margin: 5px;
+    }
+
+    .submit-category-button, .submit-answer-button {
+        background-color: #28a745;
+    }
+
+    .toggle-category-button:hover, .view-category-button:hover, .add-answer-button:hover, .submit-category-button:hover {
+        background-color: #0056b3;
+    }
+
+    .submit-answer-button:hover {
+        background-color: #218838;
+    }
+
+    #answerForm {
+        margin-top: 10px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: #f9f9f9;
+        width: 250px;
+        box-sizing: border-box;
+        z-index: 10;
+        top: 0;
+        left: 0;
+        position: absolute;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .questions-container {
+        display: flex;
+        flex-direction: column;
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    .question-item {
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: #fdd;
+    }
+
+    .question-text {
+        color: red;
+        font-weight: bold;
+    }
+
+    .answers-list {
+        margin-top: 10px;
+    }
+
+    .answer-item {
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-top: 5px;
+        background-color: #dff0d8;
+    }
+
+    .category-item {
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background-color: #e9ecef;
+    }
+
+    .category-name {
+        font-size: 16px;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

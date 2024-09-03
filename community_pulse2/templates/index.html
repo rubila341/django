@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <h1>Welcome to Community Pulse</h1>
+        <p>Discover the latest community questions and categories. Get involved and share your insights!</p>
+        <div class="cta-buttons">
+            <a href="{{ url_for('questions') }}" class="cta-button">Explore Questions</a>
+            <a href="{{ url_for('categories') }}" class="cta-button">Browse Categories</a>
+        </div>
+    </div>
+</section>
+
+<section class="features">
+    <div class="feature">
+        <h3>Ask Questions</h3>
+        <p>Post your questions and get answers from the community.</p>
+    </div>
+    <div class="feature">
+        <h3>Provide Answers</h3>
+        <p>Share your knowledge and help others by answering their questions.</p>
+    </div>
+    <div class="feature">
+        <h3>Browse Categories</h3>
+        <p>Explore different categories and find topics that interest you.</p>
+    </div>
+</section>
+{% endblock %}
