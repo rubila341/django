@@ -1,0 +1,80 @@
+views.py
+
+from rest_framework import generics, views
+from rest_framework.response import Response
+from django_filters import rest_framework as filters
+from django.utils import timezone
+from .models import Task
+from .serializers import TaskSerializer
+from django.db import models
+
+
+class TaskCreateView(generics.CreateAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
+
+
+class TaskFilter(filters.FilterSet):
+    status = filters.CharFilter(field_name='status', lookup_expr='iexact')
+    deadline = filters.DateFilter(field_name='deadline', lookup_expr='lte')
+
+    class Meta:
+        model = Task
+        fields = ['status', 'deadline']
+
+
+class TaskListView(generics.ListAPIView):
+    queryset = Task.objects.all()
+    serializer_class = TaskSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = TaskFilter
+
+
+class TaskStatsView(views.APIView):
+    def get(self, request, *args, **kwargs):
+        now = timezone.now()
+        total_tasks = Task.objects.count()
+        tasks_by_status = Task.objects.values('status').annotate(count=models.Count('id'))
+        overdue_tasks = Task.objects.filter(deadline__lt=now).count()
+
+        return Response({
+            'total_tasks': total_tasks,
+            'tasks_by_status': list(tasks_by_status),
+            'overdue_tasks': overdue_tasks
+        })
+
+
+urls
+
+from django.urls import path
+from .views import TaskCreateView, TaskListView, TaskStatsView
+
+urlpatterns = [
+    path('tasks/', TaskCreateView.as_view(), name='task-create'),
+    path('tasks/', TaskListView.as_view(), name='task-list'),
+    path('tasks/stats/', TaskStatsView.as_view(), name='task-stats'),
+]
+
+
+
+myproject/urls
+
+
+
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/', include('tasks.urls')),  
+]
+
+
+
+
+
+в постман использовал
+
+Создание задачи: POST http://127.0.0.1:8000/api/tasks/
+Получение списка задач: GET http://127.0.0.1:8000/api/tasks/
+Получение статистики задач: GET http://127.0.0.1:8000/api/tasks/stats/
