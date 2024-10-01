@@ -1,0 +1,26 @@
+Импортируйте модель ProjectFile.
+Импортируйте класс ExtractWeekDay из django.
+Напишите запрос, который будет получать список файлов за определённый день, например понедельник:
+Для выборки конкретного значения по полю даты создания используйте класс ExtractWeekDay.
+Для упрощения работы с таким значением задайте для него новое, не заявленное в модели поле, например weekday.
+Проведите фильтрацию по этому новому полю.
+Если файлов не было найдено - выведите сообщение Empty Data, если был найден хоть один файл - выведите информацию о нём:
+Название файла
+Путь к файлу, где он сохранён
+
+
+
+
+from django.utils import timezone
+from dashboard_app.models import ProjectFile
+
+today=timezone.now()
+start_of_week=today-timezone.timedelta(days=today.weekday())
+end_od_week=start_of_week + timezone.timedelta(days=6)
+files=ProjectFile.objects.filter(create_at_range=(start_of_week, end_of_week))
+if not files.exists():
+    print("Empty Data")
+else:
+    for file in files:
+        print(f"Название файла : {file.name}")
+        print (f" Путь к файлу : {file.file.url}")
