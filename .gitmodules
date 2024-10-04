@@ -1,0 +1,3 @@
+[submodule "agile_app"]
+	path = agile_app
+	url = https://github.com/rubila341/agile_app
